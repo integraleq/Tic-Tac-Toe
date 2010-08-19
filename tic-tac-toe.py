@@ -19,11 +19,20 @@ game_config.update({'cpu_shape':None})
 game_config.update({'game_board':None})
 #the player choices a coin side to use in the coin toss
 game_config.update({'player_chosen_coin_side':None})
+#the generic player who has the first move in the current game
+game_config.update({'first_move':None})
+#the side of the coin which was right-side up after the simulated coin toss
+game_config.update({'coin_side':None})
+
+#side translator is a convenience container that gives the full name of the
+#selected coin side
+side_translator = {}
+side_translator.update({'h':'Heads'})
+side_translator.update({'t':'Tails'})
 
 #the expected shapes that can be chosen are only 'x' and 'o' for now. if more exotic shapes are desired, simply
 #extend the expected list and have fun with the madness
 expected_shape_choices = ['x','o']
-
 
 #the expected sides that can be chosen are only 'h' and 't' for now.
 expected_coin_side_choices = ['h','t']
@@ -40,14 +49,14 @@ def perform_shape_selection():
         Perform Shape Selection: Asks the player for the shape to use in the game. 
     """
     os.system('clear')
-    game_config.update({'player_shape':raw_input("Enter the shape that the player will be : '(x or o)'")})
+    game_config.update({'player_shape':raw_input("Enter the shape that the player will be : '(x or o)': ")})
 
 def perform_coin_side_selection():
     """
         Perform Coin Side Selection: Asks the player for the coin side that they will choice for the coin toss.
     """
     os.system('clear')
-    game_config.update({'player_chosen_coin_side':raw_input("Choose your side '(H or T)'. This determines who makes the first move.")})
+    game_config.update({'player_chosen_coin_side':raw_input("Choose your side '(H or T)'. This determines who makes the first move. : ")})
 
 def select_cpu_shape():
     """
@@ -58,8 +67,6 @@ def select_cpu_shape():
     else:
        game_config.update({'cpu_shape':'x'})
     return game_config['cpu_shape']
-
-
 
 def display_setup():
     """
@@ -75,13 +82,22 @@ def display_setup():
             print "Come now... Invalid choice selected... Please try again."
             os.system("sleep 2")
             perform_shape_selection()
-    os.system('clear')
     print "Player 1 will play as:"+game_config['player_shape'].strip().upper()+"."
     print "CPU      will play as:"+select_cpu_shape().strip().upper()+"."
-    print " "
-    print " "
-    print " "
+    os.system('sleep 2')
     print "#### Initializing game board...."
+
+def decide_who_goes_first():
+    """
+        Decide Who Goes First: Simple selector which will set the first_move
+        key in the game_config to the player or the cpu, depending on who won
+        the coin toss
+    """
+    if game_config['player_chosen_coin_side'] == game_config['coin_side']:
+        game_config.update({'first_move':'player-1'})
+    else:
+        game_config.update({'first_move':'cpu'})
+    return game_config['first_move']
 
 def flip_coin():
     """
@@ -99,10 +115,12 @@ def flip_coin():
             print "Come now... Invalid choice selected... Please try again."
             os.system("sleep 2")
             perform_coin_side_selection()
-    os.system('clear')
     print "#### Flipping coin... Good Luck!"
-    coin_side = rnd_coin.choice(['h','t'])
-    pdb.set_trace()
+    os.system('sleep 1')
+    game_config.update({'coin_side':rnd_coin.choice(['h','t'])})
+    print "#### It's :"+side_translator[game_config['coin_side']]+"!"
+    os.system('sleep 2')
+    print "#### So the player who will move first is:"+decide_who_goes_first()
 
 def display_marquee():
     """
