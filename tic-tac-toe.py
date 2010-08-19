@@ -6,6 +6,7 @@
 import pdb
 import os
 import pprint
+import re
 
 #we want to hold all of the information about the environment of the tic tac toe game in the 
 #game config dictionary for quick lookups and also to add a nice closure for all of the state management
@@ -21,8 +22,17 @@ game_config.update({'game_board':None})
 game_config.update({'player_chosen_coin_side':None})
 #the generic player who has the first move in the current game
 game_config.update({'first_move':None})
+#the current move maker (player-1 or cpu)
+game_config.update({'current_move_maker':None})
 #the side of the coin which was right-side up after the simulated coin toss
 game_config.update({'coin_side':None})
+#boolean flag game_over is toggled once a game is done
+#games are ended when there is an actual winner or when 
+#an oppoenet or current move maker
+#concedes defeat by quitting
+game_config.update({'game_over':False})
+#first printing flag will be used for the first loop of the game
+game_config.update({'first_printing':True})
 
 #side translator is a convenience container that gives the full name of the
 #selected coin side
@@ -122,6 +132,56 @@ def flip_coin():
     os.system('sleep 2')
     print "#### So the player who will move first is:"+decide_who_goes_first()
 
+def get_next_player_move():
+    """
+        Get Next Player Move: Get the next move that a player wants to make.
+    """
+    game_config.update({'player_next_move':raw_input("Enter the next place that you would like to place your shape (example [3-3] for the 3rd row and 3rd column), or enter [q] to concede defeat...")})
+
+def make_next_move():
+    """
+        Make Next Move: Have the computer make its next calculated move.
+    """
+    pass
+
+def decide_if_game_over():
+    """
+        Decide if game is over: Scans the board to see if a winner can be
+        crowned and the game be declared over.
+    """
+    if game_config['current_move_maker'] == 'cpu':
+        game_config.update({'current_move_maker':'player-1'})
+    else:
+        game_config.update({'current_move_maker':'cpu'})
+    pass
+
+def update_game_board():
+    """
+        Update Game Board: Place piece on board according to the most recent
+        accepted move
+    """
+    pass
+
+def accept_next_move():
+    """
+        Accept Next Move: Accepts the next move from the
+                          person/cpu that is currently
+                          the move maker
+    """
+    if game_config['current_move_maker'] == 'cpu':
+        make_next_move()
+    elif game_config['current_move_maker'] == 'player-1':
+        get_next_player_move()
+        if not re.search('\[\d-\d\]',game_config['player_next_move'].strip()):
+            while ((not
+            re.search('\[\d-\d\]',game_config['player_next_move'].strip())) and (not re.search('\[q\]',game_config['player_next_move'].strip()))):
+                print "Come now... Invalid choice selected... Please try again."
+                os.system("sleep 2")
+                get_next_player_move()
+        if re.search('\[q\]',game_config['player_next_move'].strip()):
+            print "#### Ohhh! In a stunning upset, player-1 has just conceeded defeat!"
+            game_config['game_over'] = True
+
 def display_marquee():
     """
         Display Marquee: Displays the cheesy marquee that was constructed by primitive graphical means...
@@ -199,3 +259,15 @@ if __name__ == "__main__":
     display_setup()
     build_board()
     flip_coin()
+    game_config.update({'current_move_maker':game_config['first_move']})
+    while not game_config['game_over']:
+        if game_config['first_printing']:
+            game_config['first_printing'] = False
+            print "#### This should be a great game!"
+        else:
+            print "#### And the game goes on!!"
+        print "#### "+game_config['current_move_maker']+" is about to make a move..."
+        accept_next_move()
+        if not game_config['game_over']:
+            update_game_board()
+            decide_if_game_over()
