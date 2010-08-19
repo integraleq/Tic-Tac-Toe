@@ -7,22 +7,52 @@ import pdb
 import os
 import pprint
 
+#we want to hold all of the information about the environment of the tic tac toe game in the 
+#game config dictionary for quick lookups and also to add a nice closure for all of the state management
 game_config = {}
+#the player shape key holds the 'x' or 'o' shape that was selected by the player
 game_config.update({'player_shape':None})
+#the cpu shape is selected after the player selects their shape
 game_config.update({'cpu_shape':None})
+#the game board is a 3x3 array constructed from dict of dicts. this lets us simulate the tic tac toe board 
+#with a great deal of flexibility
 game_config.update({'game_board':None})
+#the player choices a coin side to use in the coin toss
+game_config.update({'player_chosen_coin_side':None})
 
+#the expected shapes that can be chosen are only 'x' and 'o' for now. if more exotic shapes are desired, simply
+#extend the expected list and have fun with the madness
 expected_shape_choices = ['x','o']
 
 
+#the expected sides that can be chosen are only 'h' and 't' for now.
+expected_coin_side_choices = ['h','t']
+
+
 def build_board():
+    """
+        Build Board: Constructs our virtual game board.
+    """
     game_config.update({'game_board':dict([(key,dict([(key,None) for key in range(1,4)])) for key in range(1,4)])})
 
 def perform_shape_selection():
+    """
+        Perform Shape Selection: Asks the player for the shape to use in the game. 
+    """
     os.system('clear')
     game_config.update({'player_shape':raw_input("Enter the shape that the player will be : '(x or o)'")})
 
+def perform_coin_side_selection():
+    """
+        Perform Coin Side Selection: Asks the player for the coin side that they will choice for the coin toss.
+    """
+    os.system('clear')
+    game_config.update({'player_chosen_coin_side':raw_input("Choose your side '(H or T)'. This determines who makes the first move.")})
+
 def select_cpu_shape():
+    """
+        Select CPU Shape: Selects the opposing shape for the cpu.
+    """
     if game_config['player_shape'] == 'x':
        game_config.update({'cpu_shape':'o'})
     else:
@@ -32,6 +62,9 @@ def select_cpu_shape():
 
 
 def display_setup():
+    """
+       Display Setup: Performs the setup of the board, player and cpu states.
+    """
     print "#### Welcome!!!!!"
     print "####"
     print "####"
@@ -42,7 +75,6 @@ def display_setup():
             print "Come now... Invalid choice selected... Please try again."
             os.system("sleep 2")
             perform_shape_selection()
-            pdb.set_trace()
     os.system('clear')
     print "Player 1 will play as:"+game_config['player_shape'].strip().upper()+"."
     print "CPU      will play as:"+select_cpu_shape().strip().upper()+"."
@@ -51,7 +83,31 @@ def display_setup():
     print " "
     print "#### Initializing game board...."
 
+def flip_coin():
+    """
+        Flip Coin: Simulates a coin flip for the decision of who makes the first move on the board.
+    """
+    import random
+    from random import Random
+    rnd_coin = Random()
+    rnd_coin.seed()
+    print "#### Initializing coin...."
+    internal_flips = [rnd_coin.choice(['h','t']) for i in range(1,1000)]
+    perform_coin_side_selection()
+    if game_config['player_chosen_coin_side'].strip().lower() not in expected_coin_side_choices:
+        while game_config['player_chosen_coin_side'].strip() not in expected_coin_side_choices:
+            print "Come now... Invalid choice selected... Please try again."
+            os.system("sleep 2")
+            perform_coin_side_selection()
+    os.system('clear')
+    print "#### Flipping coin... Good Luck!"
+    coin_side = rnd_coin.choice(['h','t'])
+    pdb.set_trace()
+
 def display_marquee():
+    """
+        Display Marquee: Displays the cheesy marquee that was constructed by primitive graphical means...
+    """
     print "########################################################################################################################################################################################################################################"
     print "########################################################################################################################################################################################################################################"
     print "########################################################################################################################################################################################################################################"
