@@ -7,7 +7,15 @@ import pdb
 import os
 import pprint
 import re
+import random
+from random import Random
 
+#random coin simulates coin flips
+rnd_coin = Random()
+rnd_coin.seed()
+#move selector randomly chooses available moves on the game board
+move_selector = Random()
+move_selector.seed()
 #we want to hold all of the information about the environment of the tic tac toe game in the 
 #game config dictionary for quick lookups and also to add a nice closure for all of the state management
 game_config = {}
@@ -33,6 +41,8 @@ game_config.update({'coin_side':None})
 game_config.update({'game_over':False})
 #first printing flag will be used for the first loop of the game
 game_config.update({'first_printing':True})
+#next move of the player
+game_config.update({'player_next_move':None})
 
 #side translator is a convenience container that gives the full name of the
 #selected coin side
@@ -52,7 +62,7 @@ def build_board():
     """
         Build Board: Constructs our virtual game board.
     """
-    game_config.update({'game_board':dict([(key,dict([(key,None) for key in range(1,4)])) for key in range(1,4)])})
+    game_config.update({'game_board':dict([(key,dict([(key,'_') for key in range(1,4)])) for key in range(1,4)])})
 
 def perform_shape_selection():
     """
@@ -113,10 +123,6 @@ def flip_coin():
     """
         Flip Coin: Simulates a coin flip for the decision of who makes the first move on the board.
     """
-    import random
-    from random import Random
-    rnd_coin = Random()
-    rnd_coin.seed()
     print "#### Initializing coin...."
     internal_flips = [rnd_coin.choice(['h','t']) for i in range(1,1000)]
     perform_coin_side_selection()
@@ -142,7 +148,11 @@ def make_next_move():
     """
         Make Next Move: Have the computer make its next calculated move.
     """
-    pass
+    #generate the moves that are left to choose from. these are moves that do
+    #not have a symbol in their slot , so '_' for now
+    moves_to_choose_from = [ (outer_key,inner_key) for outer_key in game_config['game_board'].keys() for inner_key in game_config['game_board'][outer_key].keys() if game_config['game_board'][outer_key][inner_key] == '_']
+    pdb.set_trace()
+    #use the move selector to choose the next move for the cpu player
 
 def decide_if_game_over():
     """
@@ -160,7 +170,13 @@ def update_game_board():
         Update Game Board: Place piece on board according to the most recent
         accepted move
     """
-    pass
+    pdb.set_trace()
+    if re.search('\[\d-\d\]',game_config['player_next_move']):
+        move_components = game_config['player_next_move'].split('[')[1].split(']')[0].split('-')
+        if game_config['current_move_maker'] == 'player-1': 
+            game_config['game_board'][int(move_components[0])][int(move_components[1])] = game_config['player_shape']
+        else:
+            game_config['game_board'][int(move_components[0])][int(move_components[1])] = game_config['cpu_shape']
 
 def accept_next_move():
     """
@@ -181,6 +197,15 @@ def accept_next_move():
         if re.search('\[q\]',game_config['player_next_move'].strip()):
             print "#### Ohhh! In a stunning upset, player-1 has just conceeded defeat!"
             game_config['game_over'] = True
+
+def display_game_board():
+    """
+        Display Game Board: Shows the current game board state.
+    """
+    print "#### Game Board Current State"
+    print game_config['game_board'][1][1] + " " +game_config['game_board'][1][2] + " " + game_config['game_board'][1][3] 
+    print game_config['game_board'][2][1] + " " +game_config['game_board'][2][2] + " " + game_config['game_board'][2][3] 
+    print game_config['game_board'][3][1] + " " +game_config['game_board'][3][2] + " " + game_config['game_board'][3][3] 
 
 def display_marquee():
     """
@@ -261,6 +286,7 @@ if __name__ == "__main__":
     flip_coin()
     game_config.update({'current_move_maker':game_config['first_move']})
     while not game_config['game_over']:
+        display_game_board()
         if game_config['first_printing']:
             game_config['first_printing'] = False
             print "#### This should be a great game!"
